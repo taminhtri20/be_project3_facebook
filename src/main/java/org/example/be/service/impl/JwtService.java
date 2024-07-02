@@ -2,9 +2,14 @@ package org.example.be.service.impl;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.example.be.modal.JwtToken;
+import org.example.be.modal.User;
 import org.example.be.modal.UserPrinciple;
+import org.example.be.respository.TokenRespository;
+import org.example.be.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -13,19 +18,36 @@ import java.util.Date;
 
 @Service
 public class JwtService {
+    @Autowired
+    UserService userService;
 
+    @Autowired
+    TokenRespository tokenRespository;
     private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     private static final long EXPIRE_TIME = 86400000000L;
     private static final Logger logger = LoggerFactory.getLogger(JwtService.class.getName());
 
     public String generateTokenLogin(Authentication authentication) {
         UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
-        return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME * 1000))
-                .signWith(SECRET_KEY, SignatureAlgorithm.HS512)
-                .compact();
+        User user = userService.findById(((UserPrinciple) authentication.getPrincipal()).getId()).get();
+        JwtToken jwtToken = tokenRespository.findByUser(user);
+        if (jwtToken != null) {
+            tokenRespository.save(new JwtToken(jwtToken.getId(), user, Jwts.builder()
+                    .setSubject((userPrincipal.getUsername()))
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME * 1000))
+                    .signWith(SECRET_KEY, SignatureAlgorithm.HS512)
+                    .compact(), true));
+            return tokenRespository.findByUser(user).getToken();
+        }else {
+            tokenRespository.save(new JwtToken(user, Jwts.builder()
+                    .setSubject((userPrincipal.getUsername()))
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME * 1000))
+                    .signWith(SECRET_KEY, SignatureAlgorithm.HS512)
+                    .compact(), true));
+            return tokenRespository.findByUser(user).getToken();
+        }
     }
 
     public boolean validateJwtToken(String authToken) {

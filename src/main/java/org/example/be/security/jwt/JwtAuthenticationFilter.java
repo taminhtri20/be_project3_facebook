@@ -3,6 +3,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.example.be.modal.JwtToken;
+import org.example.be.respository.TokenRespository;
 import org.example.be.service.UserService;
 import org.example.be.service.impl.JwtService;
 import org.example.be.service.impl.UserServiceIMPL;
@@ -18,6 +20,8 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    @Autowired
+    private TokenRespository tokenRespository;
 
     @Autowired
     private JwtService jwtService;
@@ -29,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
-            if (jwt != null && jwtService.validateJwtToken(jwt)) {
+            JwtToken jwtToken = tokenRespository.findByTokenEquals(jwt);
+            if (jwt != null && jwtService.validateJwtToken(jwt) && jwtToken.isValid()) {
                 String username = jwtService.getUserNameFromJwtToken(jwt);
                 UserDetails userDetails = userService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

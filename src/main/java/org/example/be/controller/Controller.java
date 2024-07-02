@@ -1,13 +1,12 @@
 package org.example.be.controller;
 import org.example.be.dto.ResponseDTO;
 import org.example.be.modal.JwtResponse;
-import org.example.be.modal.Role;
+import org.example.be.modal.JwtToken;
 import org.example.be.modal.User;
+import org.example.be.respository.TokenRespository;
 import org.example.be.service.RoleService;
 import org.example.be.service.UserService;
 import org.example.be.service.impl.JwtService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,17 +18,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
 @CrossOrigin("*")
 public class Controller {
-    private static final Logger log = LoggerFactory.getLogger(Controller.class);
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    TokenRespository tokenRespository;
 
     @Autowired
     private JwtService jwtService;
@@ -57,23 +55,13 @@ public class Controller {
 
     @PostMapping("/register")
     public ResponseEntity createUser(@RequestBody User user) {
-        Iterable<User> users = userService.findAll();
-        if (users.iterator().hasNext() == false){
-            Role role = roleService.findByName("ROLE_ADMIN");
-            user.setRoles(Collections.singletonList(role));
+        if (userService.checkRegister(user).equals("success")){
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userService.save(user);
+            return new ResponseEntity<>("Registered successfully", HttpStatus.CREATED);
         }else {
-            Role role = roleService.findByName("ROLE_USER");
-            user.setRoles(Collections.singletonList(role));
+            return new ResponseEntity<>(userService.checkRegister(user), HttpStatus.OK);
         }
-        for (User currentUser : users) {
-            if (currentUser.getEmail().equals(user.getEmail())) {
-                return new ResponseEntity<>("Email existed", HttpStatus.OK);
-            }
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.save(user);
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
@@ -85,11 +73,28 @@ public class Controller {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             User currentUser = userService.findByUsername(user.getEmail());
             return ResponseEntity.ok(new ResponseDTO("200", "Login Success",
-                    new JwtResponse(jwt, currentUser.getId(), userDetails.getUsername(), userDetails.getAuthorities())));
+                    new JwtResponse(jwt, currentUser.getId(), currentUser.getFirstName()  + currentUser.getLastName(), userDetails.getAuthorities())));
         } catch (Exception e) {
-            return ResponseEntity.ok(new ResponseDTO("401", "Email or password invalid", null));
+            return ResponseEntity.ok(new ResponseDTO("401", "Email or password not existed", null));
         }
     }
+
+    @PostMapping("/logoutUser")
+    public ResponseEntity<?> logout(@RequestParam(name = "token")String token) {
+        try {
+            JwtToken jwtToken = tokenRespository.findByTokenEquals(token);
+            if (jwtToken != null) {
+                jwtToken.setValid(false);
+                tokenRespository.save(jwtToken);
+                return new ResponseEntity<>("Logout success", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Invalid token", HttpStatus.OK);
+            }
+        }catch (Exception e){
+            return new ResponseEntity<>("Invalid token", HttpStatus.OK);
+        }
+    }
+
 
     @GetMapping("/hello")
     public ResponseEntity<String> hello() {
@@ -99,6 +104,6 @@ public class Controller {
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getProfile(@PathVariable Long id) {
         Optional<User> userOptional = this.userService.findById(id);
-        return userOptional.map(user -> new ResponseEntity<>(user, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return new ResponseEntity<>(userOptional.get(), HttpStatus.OK);
     }
 }

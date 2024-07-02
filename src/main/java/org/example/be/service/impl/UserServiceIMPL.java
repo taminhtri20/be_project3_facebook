@@ -1,27 +1,38 @@
 package org.example.be.service.impl;
 
+import org.example.be.modal.Role;
 import org.example.be.modal.User;
 import org.example.be.modal.UserPrinciple;
 import org.example.be.respository.UserRespository;
+import org.example.be.service.RoleService;
 import org.example.be.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class UserServiceIMPL implements UserService {
     @Autowired
     private UserRespository userRespository;
+    @Autowired
+    RoleService roleService;
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
 
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String email) {
-        User user = userRespository.findByEmail(email);
+        User user = userRespository.findByEmailOrPhone(email, email);
         if (user == null) {
             throw new UsernameNotFoundException(email);
         }
@@ -50,7 +61,7 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public User findByUsername(String email) {
-        return userRespository.findByEmail(email);
+        return userRespository.findByEmailOrPhone(email, email);
     }
 
     @Override
@@ -105,5 +116,39 @@ public class UserServiceIMPL implements UserService {
             }
         }
         return isRegister;
+    }
+
+    @Override
+    public String checkRegister(User user) {
+        Iterable<User> users = this.findAll();
+        if (users.iterator().hasNext() == false){
+            Role role = roleService.findByName("ROLE_ADMIN");
+            user.setRoles(Collections.singletonList(role));
+        }else {
+            Role role = roleService.findByName("ROLE_USER");
+            user.setRoles(Collections.singletonList(role));
+        }
+        if (!checkEmail(user.getEmail()) && user.getEmail() != null) {
+            user.setPhone(user.getEmail());
+            user.setEmail(null);
+        }
+        for (User currentUser : users) {
+            if (currentUser.getEmail().equals(user.getEmail())) {
+                return "Email existed";
+            }
+            if (user.getPhone() != null && currentUser.getPhone().equals(user.getPhone())) {
+                return "Phone existed";
+            }
+        }
+        return "success";
+    }
+
+    @Override
+    public boolean checkEmail(String email) {
+        if (email == null) {
+            return false;
+        }
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
+        return matcher.matches();
     }
 }

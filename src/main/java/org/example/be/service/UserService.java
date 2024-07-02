@@ -24,4 +24,7 @@ public interface UserService extends UserDetailsService {
 
     boolean isRegister(User user);
 
+    String checkRegister(User user);
+
+    boolean checkEmail(String email);
 }
