@@ -1,11 +1,10 @@
-package org.example.be.modal;
+package org.example.be.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,4 +25,6 @@ public class Post {
     private User user;
     @ManyToMany
     private List<User> usersLiked;
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Comment> comments;
 }

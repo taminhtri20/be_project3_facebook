@@ -1,21 +1,21 @@
 package org.example.be.service.impl;
 
-import org.example.be.modal.Role;
-import org.example.be.modal.User;
-import org.example.be.modal.UserPrinciple;
+import org.example.be.model.Role;
+import org.example.be.model.User;
+import org.example.be.model.UserPrinciple;
 import org.example.be.respository.UserRespository;
 import org.example.be.service.RoleService;
 import org.example.be.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -150,5 +150,22 @@ public class UserServiceIMPL implements UserService {
         }
         Matcher matcher = EMAIL_PATTERN.matcher(email);
         return matcher.matches();
+    }
+
+    @Override
+    public List<User> findByUsernameContaining(String username) {
+        String[] parts = username.split("\\s+");
+        String firstName = "";
+        String lastName = "";
+
+        if (parts.length > 0) {
+            firstName = parts[0];
+        }
+        if (parts.length > 1) {
+            lastName = String.join(" ", Arrays.copyOfRange(parts, 1, parts.length)); // Gộp các phần tử từ index 1 đến hết thành lastName
+        }else {
+            lastName = parts[0];
+        }
+        return userRespository.findAllByFirstNameContainingOrLastNameContaining(firstName, lastName);
     }
 }

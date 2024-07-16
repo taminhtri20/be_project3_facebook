@@ -1,11 +1,10 @@
 package org.example.be.service;
 
-import org.example.be.modal.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.example.be.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService extends UserDetailsService {
@@ -27,4 +26,5 @@ public interface UserService extends UserDetailsService {
     String checkRegister(User user);
 
     boolean checkEmail(String email);
+    List<User> findByUsernameContaining(String username);
 }

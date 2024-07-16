@@ -1,14 +1,10 @@
 package org.example.be.service.impl;
 
-import org.example.be.modal.Role;
+import org.example.be.model.Role;
 import org.example.be.respository.RoleRespository;
 import org.example.be.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RoleServiceIMPL implements RoleService {

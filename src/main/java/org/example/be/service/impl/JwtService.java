@@ -2,9 +2,9 @@ package org.example.be.service.impl;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import org.example.be.modal.JwtToken;
-import org.example.be.modal.User;
-import org.example.be.modal.UserPrinciple;
+import org.example.be.model.JwtToken;
+import org.example.be.model.User;
+import org.example.be.model.UserPrinciple;
 import org.example.be.respository.TokenRespository;
 import org.example.be.service.UserService;
 import org.slf4j.Logger;

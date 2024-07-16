@@ -1,4 +1,4 @@
-package org.example.be.modal;
+package org.example.be.model;
 
 import org.springframework.security.core.GrantedAuthority;
 

@@ -1,6 +1,6 @@
 package org.example.be.service;
 
-import org.example.be.modal.Role;
+import org.example.be.model.Role;
 
 public interface RoleService {
     Iterable<Role> findAll();

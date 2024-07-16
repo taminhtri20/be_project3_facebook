@@ -1,13 +1,14 @@
 package org.example.be.controller;
 import org.example.be.dto.ResponseDTO;
-import org.example.be.modal.JwtResponse;
-import org.example.be.modal.JwtToken;
-import org.example.be.modal.User;
+import org.example.be.model.JwtResponse;
+import org.example.be.model.JwtToken;
+import org.example.be.model.User;
 import org.example.be.respository.TokenRespository;
 import org.example.be.service.RoleService;
 import org.example.be.service.UserService;
 import org.example.be.service.impl.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +18,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -40,6 +46,18 @@ public class Controller {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("*");
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(false);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @GetMapping("/users")
     public ResponseEntity<Iterable<User>> showAllUser() {
@@ -95,13 +113,12 @@ public class Controller {
         }
     }
 
-
     @GetMapping("/hello")
     public ResponseEntity<String> hello() {
         return new ResponseEntity("Hello World", HttpStatus.OK);
     }
 
-    @GetMapping("/users/{id}")
+            @GetMapping("/users/{id}")
     public ResponseEntity<User> getProfile(@PathVariable Long id) {
         Optional<User> userOptional = this.userService.findById(id);
         return new ResponseEntity<>(userOptional.get(), HttpStatus.OK);

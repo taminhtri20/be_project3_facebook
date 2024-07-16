@@ -1,6 +1,6 @@
 package org.example.be.service;
 
-import org.example.be.modal.Post;
+import org.example.be.model.Post;
 
 import java.util.List;
 
@@ -10,4 +10,6 @@ public interface PostService {
     Post findById(Long id);
     void delete(Long id);
     void update(Post post);
+    List<Post> findByUserId(Long userId);
+    List<Post> search(String keyword);
 }

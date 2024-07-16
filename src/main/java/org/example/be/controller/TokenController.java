@@ -1,12 +1,11 @@
 package org.example.be.controller;
 
-import org.example.be.modal.JwtToken;
+import org.example.be.model.JwtToken;
 import org.example.be.respository.TokenRespository;
 import org.example.be.service.impl.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

@@ -3,7 +3,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.be.modal.JwtToken;
+import org.example.be.model.JwtToken;
 import org.example.be.respository.TokenRespository;
 import org.example.be.service.UserService;
 import org.example.be.service.impl.JwtService;

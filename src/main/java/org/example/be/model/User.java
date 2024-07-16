@@ -1,14 +1,10 @@
-package org.example.be.modal;
+package org.example.be.model;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity // dùng để khai báo với Spring Boot rằng đây là 1 entity biểu diễn table trong db
@@ -20,7 +16,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String avatar;
+    private String avatar = "default-avatar-profile-icon-vector-social-media-user-photo-700-205577532.jpg";
     private String email;
     private String password;
     private String firstName;
